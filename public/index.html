@@ -6,7 +6,6 @@
 <title>Sync Notes</title>
 <link rel="manifest" href="manifest.json">
 <style>
-  /* Allgemeines Layout */
   body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background: #f7f7f7;
@@ -19,8 +18,8 @@
   }
 
   .app-container {
-    width: 90%;
-    max-width: 500px;
+    width: 95%;
+    max-width: 450px;
     margin: 30px 10px;
     background: #fff;
     padding: 20px;
@@ -40,40 +39,34 @@
     display: flex;
     gap: 10px;
     margin-bottom: 20px;
-    flex-wrap: wrap;
   }
 
   #noteInput {
-    flex: 1 1 200px;
+    flex: 1;
     padding: 10px 15px;
     border-radius: 10px;
     border: 1px solid #ccc;
     font-size: 1rem;
+    box-sizing: border-box;
     min-width: 0;
   }
 
-  /* Speichern-Button */
   .save-btn {
     background-color: #4CAF50;
     color: white;
     border: none;
-    padding: 10px 15px;
+    padding: 10px 20px;
     border-radius: 10px;
     font-size: 1rem;
     cursor: pointer;
     transition: background 0.3s;
     flex: 0 0 auto;
+    white-space: nowrap;
   }
 
-  .save-btn:hover {
-    background-color: #45a049;
-  }
+  .save-btn:hover { background-color: #45a049; }
 
-  #notes {
-    list-style-type: none;
-    padding: 0;
-    margin: 0;
-  }
+  #notes { list-style-type: none; padding: 0; margin: 0; }
 
   #notes li {
     background: #e0f7fa;
@@ -85,7 +78,6 @@
     font-size: 1rem;
   }
 
-  /* Lösch-Button Styling */
   .delete-btn {
     position: absolute;
     right: 10px;
@@ -100,21 +92,14 @@
     font-size: 0.8rem;
   }
 
-  .delete-btn:hover {
-    background: darkred;
-  }
+  .delete-btn:hover { background: darkred; }
 
-  /* Media Queries für kleine Handys */
+  /* Mobile Anpassungen */
   @media (max-width: 400px) {
     .input-container {
       flex-direction: column;
     }
-
-    #noteInput {
-      width: 100%;
-    }
-
-    .save-btn {
+    #noteInput, .save-btn {
       width: 100%;
     }
   }
