@@ -1,96 +1,189 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sync Notes</title>
-  <link rel="manifest" href="manifest.json">
-  <style>
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f7f7f7; margin:0; display:flex; justify-content:center; }
-    .app-container { width:100%; max-width:400px; margin-top:50px; background:#fff; padding:20px 25px; border-radius:15px; box-shadow:0 5px 20px rgba(0,0,0,0.1); }
-    h1 { text-align:center; color:#333; }
-    .input-container { display:flex; gap:10px; margin-bottom:20px; }
-    #noteInput { flex:1; padding:10px 15px; border-radius:10px; border:1px solid #ccc; font-size:16px; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sync Notes</title>
+<link rel="manifest" href="manifest.json">
+<style>
+  /* Allgemeines Layout */
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f7f7f7;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+  }
 
-    /* Speichern-Button */
-    .save-btn { background-color:#4CAF50; color:white; border:none; padding:10px 15px; border-radius:10px; font-size:16px; cursor:pointer; transition:background 0.3s; }
-    .save-btn:hover { background-color:#45a049; }
+  .app-container {
+    width: 90%;
+    max-width: 500px;
+    margin: 30px 10px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    box-sizing: border-box;
+  }
 
-    #notes { list-style-type:none; padding:0; }
-    #notes li { background:#e0f7fa; margin-bottom:10px; padding:10px 15px; border-radius:10px; word-wrap:break-word; position:relative; }
+  h1 {
+    text-align: center;
+    color: #333;
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+  }
 
-    /* Lösch-Button */
-    .delete-btn { position:absolute; right:10px; top:50%; transform:translateY(-50%); background:red; color:white; border:none; border-radius:5px; padding:2px 6px; cursor:pointer; font-size:12px; }
-    .delete-btn:hover { background:darkred; }
-  </style>
+  .input-container {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+
+  #noteInput {
+    flex: 1 1 200px;
+    padding: 10px 15px;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+    min-width: 0;
+  }
+
+  /* Speichern-Button */
+  .save-btn {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 10px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.3s;
+    flex: 0 0 auto;
+  }
+
+  .save-btn:hover {
+    background-color: #45a049;
+  }
+
+  #notes {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  #notes li {
+    background: #e0f7fa;
+    margin-bottom: 10px;
+    padding: 10px 15px;
+    border-radius: 10px;
+    word-wrap: break-word;
+    position: relative;
+    font-size: 1rem;
+  }
+
+  /* Lösch-Button Styling */
+  .delete-btn {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: red;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 2px 6px;
+    cursor: pointer;
+    font-size: 0.8rem;
+  }
+
+  .delete-btn:hover {
+    background: darkred;
+  }
+
+  /* Media Queries für kleine Handys */
+  @media (max-width: 400px) {
+    .input-container {
+      flex-direction: column;
+    }
+
+    #noteInput {
+      width: 100%;
+    }
+
+    .save-btn {
+      width: 100%;
+    }
+  }
+</style>
 </head>
 <body>
-  <div class="app-container">
-    <h1>Meine Notizen</h1>
-    <div class="input-container">
-      <input id="noteInput" placeholder="Neue Notiz">
-      <button class="save-btn" onclick="addNote()">Speichern</button>
-    </div>
-    <ul id="notes"></ul>
+<div class="app-container">
+  <h1>Meine Notizen</h1>
+  <div class="input-container">
+    <input id="noteInput" placeholder="Neue Notiz">
+    <button class="save-btn" onclick="addNote()">Speichern</button>
   </div>
+  <ul id="notes"></ul>
+</div>
 
-  <script src="/socket.io/socket.io.js"></script>
-  <script>
-    const socket = io()
-    const list = document.getElementById("notes")
-    const noteInput = document.getElementById("noteInput")
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  const socket = io()
+  const list = document.getElementById("notes")
+  const noteInput = document.getElementById("noteInput")
 
-    function addNote(){
-      const text = noteInput.value.trim()
-      if(text){
-        socket.emit("newNote", text)
-        noteInput.value = ""
-      }
+  function addNote(){
+    const text = noteInput.value.trim()
+    if(text){
+      socket.emit("newNote", text)
+      noteInput.value = ""
     }
+  }
 
-    // Android Push Notifications
-    if ("Notification" in window) {
-      Notification.requestPermission().then(permission => console.log("Notification permission:", permission))
+  if ("Notification" in window) {
+    Notification.requestPermission().then(permission => console.log("Notification permission:", permission))
+  }
+
+  function createNoteElement(note){
+    const li = document.createElement("li")
+    li.textContent = note
+
+    const delBtn = document.createElement("button")
+    delBtn.textContent = "✖"
+    delBtn.className = "delete-btn"
+    delBtn.onclick = () => {
+      li.remove()
+      socket.emit("deleteNote", note)
     }
+    li.appendChild(delBtn)
+    return li
+  }
 
-    function createNoteElement(note){
-      const li = document.createElement("li")
-      li.textContent = note
+  socket.on("noteAdded", note => {
+    list.appendChild(createNoteElement(note))
+    if(Notification.permission === "granted") new Notification("Neue Notiz", { body: note, icon: "/icon.png" })
+  })
 
-      const delBtn = document.createElement("button")
-      delBtn.textContent = "✖"
-      delBtn.className = "delete-btn"
-      delBtn.onclick = () => {
-        li.remove()
-        socket.emit("deleteNote", note)
-      }
-      li.appendChild(delBtn)
-      return li
-    }
+  socket.on("loadNotes", notes => {
+    list.innerHTML = ""
+    notes.forEach(note => list.appendChild(createNoteElement(note)))
+  })
 
-    // Socket.IO Events
-    socket.on("noteAdded", note => {
-      list.appendChild(createNoteElement(note))
-      if(Notification.permission === "granted") new Notification("Neue Notiz", { body: note, icon: "/icon.png" })
+  socket.on("noteDeleted", note => {
+    Array.from(list.children).forEach(li => {
+      if(li.firstChild.nodeValue === note) li.remove()
     })
+  })
 
-    socket.on("loadNotes", notes => {
-      list.innerHTML = ""
-      notes.forEach(note => list.appendChild(createNoteElement(note)))
-    })
-
-    socket.on("noteDeleted", note => {
-      Array.from(list.children).forEach(li => {
-        if(li.firstChild.nodeValue === note) li.remove()
-      })
-    })
-
-    // Service Worker registrieren
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("/service-worker.js")
-        .then(() => console.log("Service Worker registriert"))
-        .catch(err => console.log("Service Worker Fehler", err))
-    }
-  </script>
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("/service-worker.js")
+      .then(() => console.log("Service Worker registriert"))
+      .catch(err => console.log("Service Worker Fehler", err))
+  }
+</script>
 </body>
 </html>
