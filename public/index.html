@@ -100,10 +100,26 @@
       }
     }
 
+    // Push Notification Berechtigung anfordern
+    if ("Notification" in window) {
+      Notification.requestPermission().then(permission => {
+        console.log("Notification permission:", permission)
+      })
+    }
+
+    // Socket Events
     socket.on("noteAdded", note => {
       const li = document.createElement("li")
       li.textContent = note
       list.appendChild(li)
+
+      // Push Notification
+      if(Notification.permission === "granted") {
+        new Notification("Neue Notiz", {
+          body: note,
+          icon: "/icon.png"
+        })
+      }
     })
 
     socket.on("loadNotes", notes => {
@@ -115,6 +131,7 @@
       })
     })
 
+    // Service Worker registrieren
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("/service-worker.js")
         .then(() => console.log("Service Worker registriert"))
