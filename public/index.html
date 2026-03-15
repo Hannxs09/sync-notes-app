@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>Sync Notes</title>
+
+<link rel="manifest" href="manifest.json">
+
+</head>
+
+<body>
+
+<h1>Meine Notizen</h1>
+
+<input id="noteInput">
+<button onclick="addNote()">Speichern</button>
+
+<ul id="notes"></ul>
+
+<script src="/socket.io/socket.io.js"></script>
+
+<script>
+
+const socket = io()
+
+const list = document.getElementById("notes")
+
+function addNote(){
+
+ const text = document.getElementById("noteInput").value
+
+ socket.emit("newNote", text)
+
+}
+
+socket.on("noteAdded", note => {
+
+ const li = document.createElement("li")
+ li.textContent = note
+
+ list.appendChild(li)
+
+})
+
+socket.on("loadNotes", notes => {
+
+ notes.forEach(note => {
+
+  const li = document.createElement("li")
+  li.textContent = note
+
+  list.appendChild(li)
+
+ })
+
+})
+
+if ("serviceWorker" in navigator) {
+ navigator.serviceWorker.register("/service-worker.js")
+}
+
+</script>
+
+</body>
+</html>
