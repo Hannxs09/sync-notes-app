@@ -45,7 +45,8 @@
       font-size: 16px;
     }
 
-    button {
+    /* Speichern-Button */
+    .save-btn {
       background-color: #4CAF50;
       color: white;
       border: none;
@@ -56,7 +57,7 @@
       transition: background 0.3s;
     }
 
-    button:hover {
+    .save-btn:hover {
       background-color: #45a049;
     }
 
@@ -88,6 +89,10 @@
       cursor: pointer;
       font-size: 12px;
     }
+
+    .delete-btn:hover {
+      background: darkred;
+    }
   </style>
 </head>
 <body>
@@ -96,7 +101,7 @@
 
     <div class="input-container">
       <input id="noteInput" placeholder="Neue Notiz">
-      <button onclick="addNote()">Speichern</button>
+      <button class="save-btn" onclick="addNote()">Speichern</button>
     </div>
 
     <ul id="notes"></ul>
