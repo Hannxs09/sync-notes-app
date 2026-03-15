@@ -6,104 +6,31 @@
   <title>Sync Notes</title>
   <link rel="manifest" href="manifest.json">
   <style>
-    /* Allgemeines Layout */
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: #f7f7f7;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      justify-content: center;
-    }
-
-    .app-container {
-      width: 100%;
-      max-width: 400px;
-      margin-top: 50px;
-      background: #fff;
-      padding: 20px 25px;
-      border-radius: 15px;
-      box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-    }
-
-    h1 {
-      text-align: center;
-      color: #333;
-    }
-
-    .input-container {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 20px;
-    }
-
-    #noteInput {
-      flex: 1;
-      padding: 10px 15px;
-      border-radius: 10px;
-      border: 1px solid #ccc;
-      font-size: 16px;
-    }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f7f7f7; margin:0; display:flex; justify-content:center; }
+    .app-container { width:100%; max-width:400px; margin-top:50px; background:#fff; padding:20px 25px; border-radius:15px; box-shadow:0 5px 20px rgba(0,0,0,0.1); }
+    h1 { text-align:center; color:#333; }
+    .input-container { display:flex; gap:10px; margin-bottom:20px; }
+    #noteInput { flex:1; padding:10px 15px; border-radius:10px; border:1px solid #ccc; font-size:16px; }
 
     /* Speichern-Button */
-    .save-btn {
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      padding: 10px 15px;
-      border-radius: 10px;
-      font-size: 16px;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
+    .save-btn { background-color:#4CAF50; color:white; border:none; padding:10px 15px; border-radius:10px; font-size:16px; cursor:pointer; transition:background 0.3s; }
+    .save-btn:hover { background-color:#45a049; }
 
-    .save-btn:hover {
-      background-color: #45a049;
-    }
+    #notes { list-style-type:none; padding:0; }
+    #notes li { background:#e0f7fa; margin-bottom:10px; padding:10px 15px; border-radius:10px; word-wrap:break-word; position:relative; }
 
-    #notes {
-      list-style-type: none;
-      padding: 0;
-    }
-
-    #notes li {
-      background: #e0f7fa;
-      margin-bottom: 10px;
-      padding: 10px 15px;
-      border-radius: 10px;
-      word-wrap: break-word;
-      position: relative;
-    }
-
-    /* Lösch-Button Styling */
-    .delete-btn {
-      position: absolute;
-      right: 10px;
-      top: 50%;
-      transform: translateY(-50%);
-      background: red;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      padding: 2px 6px;
-      cursor: pointer;
-      font-size: 12px;
-    }
-
-    .delete-btn:hover {
-      background: darkred;
-    }
+    /* Lösch-Button */
+    .delete-btn { position:absolute; right:10px; top:50%; transform:translateY(-50%); background:red; color:white; border:none; border-radius:5px; padding:2px 6px; cursor:pointer; font-size:12px; }
+    .delete-btn:hover { background:darkred; }
   </style>
 </head>
 <body>
   <div class="app-container">
     <h1>Meine Notizen</h1>
-
     <div class="input-container">
       <input id="noteInput" placeholder="Neue Notiz">
       <button class="save-btn" onclick="addNote()">Speichern</button>
     </div>
-
     <ul id="notes"></ul>
   </div>
 
@@ -121,25 +48,21 @@
       }
     }
 
-    // Android-Push Notification Berechtigung anfordern
+    // Android Push Notifications
     if ("Notification" in window) {
-      Notification.requestPermission().then(permission => {
-        console.log("Notification permission:", permission)
-      })
+      Notification.requestPermission().then(permission => console.log("Notification permission:", permission))
     }
 
-    // Funktion zum Erstellen von Listeneinträgen mit Lösch-Button
     function createNoteElement(note){
       const li = document.createElement("li")
       li.textContent = note
 
-      // Lösch-Button
       const delBtn = document.createElement("button")
       delBtn.textContent = "✖"
       delBtn.className = "delete-btn"
       delBtn.onclick = () => {
-        li.remove()                 // entfernt die Notiz aus der Liste
-        socket.emit("deleteNote", note) // optional: andere Clients informieren
+        li.remove()
+        socket.emit("deleteNote", note)
       }
       li.appendChild(delBtn)
       return li
@@ -147,34 +70,22 @@
 
     // Socket.IO Events
     socket.on("noteAdded", note => {
-      const li = createNoteElement(note)
-      list.appendChild(li)
-
-      // Android Push Notification
-      if(Notification.permission === "granted") {
-        new Notification("Neue Notiz", {
-          body: note,
-          icon: "/icon.png"
-        })
-      }
+      list.appendChild(createNoteElement(note))
+      if(Notification.permission === "granted") new Notification("Neue Notiz", { body: note, icon: "/icon.png" })
     })
 
     socket.on("loadNotes", notes => {
       list.innerHTML = ""
-      notes.forEach(note => {
-        const li = createNoteElement(note)
-        list.appendChild(li)
-      })
+      notes.forEach(note => list.appendChild(createNoteElement(note)))
     })
 
     socket.on("noteDeleted", note => {
-      const items = Array.from(list.children)
-      items.forEach(li => {
+      Array.from(list.children).forEach(li => {
         if(li.firstChild.nodeValue === note) li.remove()
       })
     })
 
-    // Service Worker registrieren (für PWA + Notifications)
+    // Service Worker registrieren
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("/service-worker.js")
         .then(() => console.log("Service Worker registriert"))
