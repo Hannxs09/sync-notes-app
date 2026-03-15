@@ -1,65 +1,125 @@
 <!DOCTYPE html>
-<html>
+<html lang="de">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sync Notes</title>
+  <link rel="manifest" href="manifest.json">
+  <style>
+    /* Allgemeines Layout */
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f7f7f7;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+    }
 
-<title>Sync Notes</title>
+    .app-container {
+      width: 100%;
+      max-width: 400px;
+      margin-top: 50px;
+      background: #fff;
+      padding: 20px 25px;
+      border-radius: 15px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    }
 
-<link rel="manifest" href="manifest.json">
+    h1 {
+      text-align: center;
+      color: #333;
+    }
 
+    .input-container {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    #noteInput {
+      flex: 1;
+      padding: 10px 15px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+
+    button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 10px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    #notes {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    #notes li {
+      background: #e0f7fa;
+      margin-bottom: 10px;
+      padding: 10px 15px;
+      border-radius: 10px;
+      word-wrap: break-word;
+    }
+  </style>
 </head>
-
 <body>
+  <div class="app-container">
+    <h1>Meine Notizen</h1>
 
-<h1>Meine Notizen</h1>
+    <div class="input-container">
+      <input id="noteInput" placeholder="Neue Notiz">
+      <button onclick="addNote()">Speichern</button>
+    </div>
 
-<input id="noteInput">
-<button onclick="addNote()">Speichern</button>
+    <ul id="notes"></ul>
+  </div>
 
-<ul id="notes"></ul>
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io()
+    const list = document.getElementById("notes")
+    const noteInput = document.getElementById("noteInput")
 
-<script src="/socket.io/socket.io.js"></script>
+    function addNote(){
+      const text = noteInput.value.trim()
+      if(text){
+        socket.emit("newNote", text)
+        noteInput.value = ""
+      }
+    }
 
-<script>
+    socket.on("noteAdded", note => {
+      const li = document.createElement("li")
+      li.textContent = note
+      list.appendChild(li)
+    })
 
-const socket = io()
+    socket.on("loadNotes", notes => {
+      list.innerHTML = "" // vorher leeren
+      notes.forEach(note => {
+        const li = document.createElement("li")
+        li.textContent = note
+        list.appendChild(li)
+      })
+    })
 
-const list = document.getElementById("notes")
-
-function addNote(){
-
- const text = document.getElementById("noteInput").value
-
- socket.emit("newNote", text)
-
-}
-
-socket.on("noteAdded", note => {
-
- const li = document.createElement("li")
- li.textContent = note
-
- list.appendChild(li)
-
-})
-
-socket.on("loadNotes", notes => {
-
- notes.forEach(note => {
-
-  const li = document.createElement("li")
-  li.textContent = note
-
-  list.appendChild(li)
-
- })
-
-})
-
-if ("serviceWorker" in navigator) {
- navigator.serviceWorker.register("/service-worker.js")
-}
-
-</script>
-
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/service-worker.js")
+        .then(() => console.log("Service Worker registriert"))
+        .catch(err => console.log("Service Worker Fehler", err))
+    }
+  </script>
 </body>
 </html>
